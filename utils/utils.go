@@ -6,7 +6,10 @@ import (
 	"genote-watcher/model"
 	"log"
 	"math/rand"
+	"net/http/cookiejar"
 	"os"
+
+	"github.com/gocolly/colly/v2"
 )
 
 func GetUserAgents() []string {
@@ -21,6 +24,17 @@ func GetUserAgents() []string {
 func GetRandomUserAgent() string {
 	userAgents := GetUserAgents()
 	return userAgents[rand.Intn(len(userAgents))]
+}
+
+func CreateCollector() *colly.Collector {
+	c := colly.NewCollector(
+		colly.UserAgent(GetRandomUserAgent()),
+	)
+
+	jar, _ := cookiejar.New(nil)
+	c.SetCookieJar(jar)
+
+	return c
 }
 
 func WriteResultFile(data []model.CourseRow) {
