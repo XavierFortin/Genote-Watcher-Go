@@ -36,7 +36,7 @@ jobs:
         GOOS=linux GOARCH=amd64 go build -ldflags "-w -s" -o build/linux/genote-watcher
         cp .env.template build/linux/.env
         cd build/linux
-        zip ../genote-watcher:${{github.ref}}-linux-amd64.zip genote-watcher .env
+        zip ../genote-watcher:${{github.ref_name}}-linux-amd64.zip genote-watcher .env
         cd ../..
         
     - name: Build and package Windows binary
@@ -45,7 +45,7 @@ jobs:
         GOOS=windows GOARCH=amd64 go build -ldflags "-w -s" -o build/windows/genote-watcher.exe
         cp .env.template build/windows/.env
         cd build/windows
-        zip ../genote-watcher:${{github.ref}}-windows-amd64.zip genote-watcher.exe .env
+        zip ../genote-watcher:${{github.ref_name}}-windows-amd64.zip genote-watcher.exe .env
         cd ../..
         
     - name: Create Release
@@ -53,8 +53,8 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          build/genote-watcher:${{github.ref}}-linux-amd64.zip
-          build/genote-watcher:${{github.ref}}-windows-amd64.zip
+          build/genote-watcher${{github.ref_name}}-linux-amd64.zip
+          build/genote-watcher${{github.ref_name}}-windows-amd64.zip
         draft: false
         prerelease: false
         generate_release_notes: true
