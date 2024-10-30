@@ -4,15 +4,18 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"strconv"
 	"sync"
+	"time"
 
 	"github.com/joho/godotenv"
 )
 
 type Config struct {
-	Username       string `env:"GENOTE_USER" required:"true"`
-	Password       string `env:"GENOTE_PASSWORD" required:"true"`
-	DiscordWebhook string `env:"DISCORD_WEBHOOK" required:"true"`
+	Username       string        `env:"GENOTE_USER" required:"true"`
+	Password       string        `env:"GENOTE_PASSWORD" required:"true"`
+	DiscordWebhook string        `env:"DISCORD_WEBHOOK" required:"true"`
+	TimeInterval   time.Duration `env:"TIME_INTERVAL" required:"false" default:"0"`
 }
 
 var (
@@ -50,6 +53,7 @@ func loadEnvVariables() (*Config, error) {
 
 		key := field.Tag.Get("env")
 		required := field.Tag.Get("required") == "true"
+		defaultValue := field.Tag.Get("default")
 
 		envValue := os.Getenv(key)
 
@@ -59,8 +63,34 @@ func loadEnvVariables() (*Config, error) {
 			}
 		}
 
-		value.SetString(envValue)
+		if envValue == "" && defaultValue != "" {
+			envValue = defaultValue
+		}
+
+		if err := setField(value, envValue); err != nil {
+			return nil, fmt.Errorf("failed to set field %s: %v", key, err)
+		}
 	}
 
 	return config, nil
+}
+
+func setField(field reflect.Value, value string) error {
+	switch field.Kind() {
+	case reflect.String:
+		field.SetString(value)
+	case reflect.Int:
+		i, err := strconv.Atoi(value)
+		if err != nil {
+			return err
+		}
+		field.SetInt(int64(i))
+	case reflect.TypeOf(time.Duration(0)).Kind():
+		d, err := time.ParseDuration(value)
+		if err != nil {
+			return err
+		}
+		field.SetInt(int64(d))
+	}
+	return nil
 }
