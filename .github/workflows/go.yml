@@ -29,6 +29,7 @@ jobs:
         GENOTE_USER=
         GENOTE_PASSWORD=
         DISCORD_WEBHOOK=
+        TIME_INTERVAL=0
         EOL
     - name: Build and package Linux binary
       run: |

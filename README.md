@@ -12,6 +12,14 @@ to make things faster and easier to share.
   - **GENOTE_USER** : Contains your UdS email to login into genote
   - **GENOTE_PASSWORD** : Contains your UdS password to login into genote
   - **DISCORD_WEBHOOK** : Your desired Discord webhook url
+  - **TIME_INTERVAL** : A time interval used as a replacement for a cron job.
+    - Valid formats are `ms`, `s`, `m` and `h`
+    - Example of possible time intervals:
+      - `0`: Runs only once
+      - `300ms`: Runs every 300ms
+      - `2h45m`: Runs every 2h and 45 min
+    - Do not put the interval too short. There is a possibility that your IP
+      gets blocked if it is spamming too fast.
 
 ## Start the app
 
