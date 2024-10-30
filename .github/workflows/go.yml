@@ -65,7 +65,7 @@ jobs:
     env:
       DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
       DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
-      IMAGE_NAME: ${{ github.repository }}
+      IMAGE_NAME: genote-watcher 
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
