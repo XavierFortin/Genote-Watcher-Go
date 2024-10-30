@@ -13,7 +13,7 @@ jobs:
       contents: write
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Set up Go
       uses: actions/setup-go@v4
@@ -48,19 +48,21 @@ jobs:
         cd build/windows
         zip ../genote-watcher:${{github.ref_name}}-windows-amd64.zip genote-watcher.exe .env
         cd ../..
+        ls
         
     - name: Create Release
       id: create_release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         files: |
-          build/linux/genote-watcher${{github.ref_name}}-linux-amd64.zip
-          build/windows/genote-watcher${{github.ref_name}}-windows-amd64.zip
+          build/genote-watcher:${{github.ref_name}}-linux-amd64.zip
+          build/genote-watcher:${{github.ref_name}}-windows-amd64.zip
         draft: false
         prerelease: false
         generate_release_notes: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   build-and-push:
     runs-on: ubuntu-latest
     env:
