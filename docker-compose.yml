@@ -2,7 +2,9 @@ version: '3.4'
 
 services:
   genotewatcher:
-    image: genotewatcher
-    build:
-      context: .
-      dockerfile: ./Dockerfile
+    image: enox/genote-watcher:latest
+    environment:
+      - GENOTE_USER=
+      - GENOTE_PASSWORD=
+      - DISCORD_WEBHOOK=
+      - TIME_INTERVAL=
