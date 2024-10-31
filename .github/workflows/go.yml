@@ -48,8 +48,6 @@ jobs:
         cd build/windows
         zip ../genote-watcher:${{github.ref_name}}-windows-amd64.zip genote-watcher.exe .env
         cd ../..
-        ls
-        
     - name: Create Release
       id: create_release
       uses: softprops/action-gh-release@v2
@@ -96,6 +94,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
+          platforms: linux/amd64,linux/arm64
           context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}
