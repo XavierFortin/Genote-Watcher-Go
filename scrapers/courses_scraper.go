@@ -2,8 +2,8 @@ package scrapers
 
 import (
 	"cmp"
+	"fmt"
 	"genote-watcher/model"
-	"log"
 	"slices"
 	"strconv"
 	"strings"
@@ -30,7 +30,7 @@ func ScrapeCourseRows(c *colly.Collector) []model.CourseRow {
 
 	err := c.Visit("https://www.usherbrooke.ca/genote/application/etudiant/cours.php")
 	if err != nil {
-		log.Fatal(err)
+		fmt.Print(err)
 	}
 
 	c.Wait()

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	"genote-watcher/model"
@@ -34,7 +33,8 @@ func login(c *colly.Collector) {
 
 	err := c.Post(LOGIN_URL, fieldsData)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("Error while logging in: ")
+		fmt.Println(err)
 	}
 }
 
