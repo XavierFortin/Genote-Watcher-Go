@@ -16,8 +16,7 @@ func NotifyUser(url, courseCode string) {
         "description": "Nouvelle note en %s est disponible sur Genote!",
         "color": 100425
       }
-    ],
-    "attachments": []
+    ]
 	}
 	`, courseCode))
 
@@ -29,8 +28,34 @@ func NotifyUser(url, courseCode string) {
 	defer r.Body.Close()
 
 	if r.StatusCode == 204 {
-		log.Println("Notification sent successfully")
+		log.Printf("Notification sent successfully")
 	} else {
 		log.Println("Failed to send notification")
+	}
+}
+
+func NotifyOnCrash(url string) {
+	data := []byte(`
+	{
+		"embeds": [
+			{
+				"description": "Genote Watcher a crashé!",
+				"color": 16711680
+			}
+		]
+	}
+	`)
+
+	contentType := "application/json"
+	r, err := http.Post(url, contentType, bytes.NewBuffer(data))
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer r.Body.Close()
+
+	if r.StatusCode == 204 {
+		log.Printf("Crash notification sent successfully")
+	} else {
+		log.Println("Failed to send crash notification")
 	}
 }

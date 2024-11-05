@@ -1,7 +1,8 @@
 package main
 
 import (
-	"fmt"
+	"log"
+	"runtime/debug"
 	"time"
 
 	"genote-watcher/model"
@@ -33,8 +34,8 @@ func login(c *colly.Collector) {
 
 	err := c.Post(LOGIN_URL, fieldsData)
 	if err != nil {
-		fmt.Println("Error while logging in: ")
-		fmt.Println(err)
+		log.Println("Error while logging in: ")
+		log.Println(err)
 	}
 }
 
@@ -47,16 +48,15 @@ func notifyForChanges(newRows, oldRows []model.CourseRow) {
 		}
 	}
 
-	formattedDate := time.Now().Format("2006/01/02 15:04:05")
 	var changesDetected bool
 	for _, courseCode := range diffRows {
-		fmt.Printf("[%s] Nouvelle note en %s est disponible sur Genote!\n", formattedDate, courseCode)
+		log.Printf("New grade in %s is available on Genote!\n", courseCode)
 		utils.NotifyUser(config.DiscordWebhook, courseCode)
 		changesDetected = true
 	}
 
 	if !changesDetected {
-		fmt.Printf("[%s] Aucun changement détecté\n", formattedDate)
+		log.Printf("No changes detected\n")
 	}
 }
 
@@ -79,6 +79,15 @@ func startGenoteScraping() {
 }
 
 func main() {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Println("Sending crash notification")
+			stackTrace := string(debug.Stack())
+			log.Println(stackTrace)
+			utils.NotifyOnCrash(config.DiscordWebhook)
+		}
+	}()
+
 	config = utils.MustGetConfig()
 
 	if config.TimeInterval == 0 {
