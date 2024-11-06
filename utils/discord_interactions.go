@@ -22,9 +22,8 @@ func NotifyUser(url, courseCode string) {
 
 	contentType := "application/json"
 	r, err := http.Post(url, contentType, bytes.NewBuffer(data))
-	if err != nil {
-		log.Fatal(err)
-	}
+	HandleFatalError(err)
+
 	defer r.Body.Close()
 
 	if r.StatusCode == 204 {
@@ -48,9 +47,7 @@ func NotifyOnCrash(url string) {
 
 	contentType := "application/json"
 	r, err := http.Post(url, contentType, bytes.NewBuffer(data))
-	if err != nil {
-		log.Fatal(err)
-	}
+	HandleFatalError(err)
 	defer r.Body.Close()
 
 	if r.StatusCode == 204 {

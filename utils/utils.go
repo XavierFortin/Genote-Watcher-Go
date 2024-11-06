@@ -41,9 +41,7 @@ func WriteResultFile(data []model.CourseRow) {
 	r, _ := json.Marshal(data)
 
 	err := os.WriteFile("result.json", r, 0644)
-	if err != nil {
-		log.Fatal(err)
-	}
+	HandleFatalError(err)
 }
 
 func ReadResultFile() []model.CourseRow {
@@ -55,19 +53,27 @@ func ReadResultFile() []model.CourseRow {
 
 	file, err := os.ReadFile("result.json")
 
-	if err != nil {
-		log.Fatal(err)
-	}
+	HandleFatalError(err)
 
 	var data []model.CourseRow
 	err = json.Unmarshal(file, &data)
-	if err != nil {
-		log.Fatal(err)
-	}
+	HandleFatalError(err)
 
 	if len(data) == 0 {
 		return nil
 	}
 
 	return data
+}
+
+func HandleLogError(err error) {
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func HandleFatalError(err error) {
+	if err != nil {
+		log.Fatalln(err)
+	}
 }
