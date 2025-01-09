@@ -4,7 +4,7 @@ RUN apk add --no-cache git
 WORKDIR /src/genote-watcher
 COPY . .
 ENV CGO_ENABLED=0
-RUN go get -d -v ./...
+RUN cd src && go mod download
 RUN go build -C src -o /bin/genote-watcher -v -ldflags "-X main.buildMode=prod"
 
 # Final stage
