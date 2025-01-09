@@ -3,70 +3,70 @@ name: Release Go Application
 on:
   push:
     tags:
-      - '*'
+      - "*"
 
 jobs:
   build:
     name: Build and Release
     runs-on: ubuntu-latest
-    permissions: 
+    permissions:
       contents: write
-    
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.23.1'
-        
-    - name: Install dependencies
-      run: go mod download
-        
-    - name: Create .env template
-      run: |
-        cat > .env.template << EOL
-        GENOTE_USER=
-        GENOTE_PASSWORD=
-        DISCORD_WEBHOOK=
-        TIME_INTERVAL=0
-        EOL
-    - name: Build and package Linux binary
-      run: |
-        mkdir -p build/linux
-        GOOS=linux GOARCH=amd64 go build -o build/linux/genote-watcher
-        cp .env.template build/linux/.env
-        cd build/linux
-        zip ../genote-watcher:${{github.ref_name}}-linux-amd64.zip genote-watcher .env
-        cd ../..
-        
-    - name: Build and package Windows binary
-      run: |
-        mkdir -p build/windows
-        GOOS=windows GOARCH=amd64 go build -o build/windows/genote-watcher.exe
-        cp .env.template build/windows/.env
-        cd build/windows
-        zip ../genote-watcher:${{github.ref_name}}-windows-amd64.zip genote-watcher.exe .env
-        cd ../..
-    - name: Create Release
-      id: create_release
-      uses: softprops/action-gh-release@v2
-      with:
-        files: |
-          build/genote-watcher:${{github.ref_name}}-linux-amd64.zip
-          build/genote-watcher:${{github.ref_name}}-windows-amd64.zip
-        draft: false
-        prerelease: false
-        generate_release_notes: true
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.23.1"
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Create .env template
+        run: |
+          cat > .env.template << EOL
+          GENOTE_USER=
+          GENOTE_PASSWORD=
+          DISCORD_WEBHOOK=
+          TIME_INTERVAL=0
+          EOL
+      - name: Build and package Linux binary
+        run: |
+          mkdir -p build/linux
+          GOOS=linux GOARCH=amd64 go build -ldflags "-X main.buildMode=prod" -o build/linux/genote-watcher
+          cp .env.template build/linux/.env
+          cd build/linux
+          zip ../genote-watcher:${{github.ref_name}}-linux-amd64.zip genote-watcher .env
+          cd ../..
+
+      - name: Build and package Windows binary
+        run: |
+          mkdir -p build/windows
+          GOOS=windows GOARCH=amd64 go build -ldflags "-X main.buildMode=prod" -o build/windows/genote-watcher.exe
+          cp .env.template build/windows/.env
+          cd build/windows
+          zip ../genote-watcher:${{github.ref_name}}-windows-amd64.zip genote-watcher.exe .env
+          cd ../..
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            build/genote-watcher:${{github.ref_name}}-linux-amd64.zip
+            build/genote-watcher:${{github.ref_name}}-windows-amd64.zip
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-and-push:
     runs-on: ubuntu-latest
     env:
       DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
       DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
-      IMAGE_NAME: genote-watcher 
+      IMAGE_NAME: genote-watcher
     steps:
       - name: Check out repository
         uses: actions/checkout@v4

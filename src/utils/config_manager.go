@@ -8,39 +8,31 @@ import (
 	"sync"
 	"time"
 
+	"genote-watcher/model"
+
 	"github.com/joho/godotenv"
 )
 
-type Config struct {
-	Username       string        `env:"GENOTE_USER" required:"true"`
-	Password       string        `env:"GENOTE_PASSWORD" required:"true"`
-	DiscordWebhook string        `env:"DISCORD_WEBHOOK" required:"true"`
-	TimeInterval   time.Duration `env:"TIME_INTERVAL" required:"false" default:"0"`
-}
-
 var (
-	instance *Config
+	instance *model.Config
 	once     sync.Once
 	loadErr  error
 )
 
-func GetConfig() (*Config, error) {
+func MustGetConfig() *model.Config {
 	once.Do(func() {
 		instance, loadErr = loadEnvVariables()
 	})
-	return instance, loadErr
-}
 
-func MustGetConfig() *Config {
-	config, err := GetConfig()
-	if err != nil {
-		panic(err)
+	if loadErr != nil {
+		panic(loadErr)
 	}
-	return config
+
+	return instance
 }
 
-func loadEnvVariables() (*Config, error) {
-	config := &Config{}
+func loadEnvVariables() (*model.Config, error) {
+	config := &model.Config{}
 
 	godotenv.Load()
 
@@ -76,6 +68,7 @@ func loadEnvVariables() (*Config, error) {
 }
 
 func setField(field reflect.Value, value string) error {
+
 	switch field.Kind() {
 	case reflect.String:
 		field.SetString(value)
