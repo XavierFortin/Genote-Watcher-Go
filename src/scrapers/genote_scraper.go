@@ -19,7 +19,7 @@ const (
 	LOGIN_URL = "https://cas.usherbrooke.ca/login?service=https://www.usherbrooke.ca/genote/public/index.php"
 )
 
-type genoteScraper struct {
+type GenoteScraper struct {
 	isRunning       bool
 	config          model.Config
 	ticker          *time.Ticker
@@ -27,9 +27,9 @@ type genoteScraper struct {
 }
 
 // Creates a new genoteScraper. Environment variables need to exist to create a new genoteScraper
-func NewGenoteScraper(control_channel chan scraper_control.ScraperCommandType) genoteScraper {
+func NewGenoteScraper(control_channel chan scraper_control.ScraperCommandType) GenoteScraper {
 	config := utils.MustGetConfig()
-	return genoteScraper{
+	return GenoteScraper{
 		isRunning:       false,
 		config:          config,
 		ticker:          nil,
@@ -37,7 +37,7 @@ func NewGenoteScraper(control_channel chan scraper_control.ScraperCommandType) g
 	}
 }
 
-func (gs *genoteScraper) Start() {
+func (gs *GenoteScraper) Start() {
 	gs.isRunning = true
 	if gs.config.TimeInterval == 0 {
 		gs.ScrapeOnce()
@@ -57,15 +57,22 @@ func (gs *genoteScraper) Start() {
 	}
 }
 
-func (gs *genoteScraper) handleCommand(command scraper_control.ScraperCommandType) {
+func (gs *GenoteScraper) handleCommand(command scraper_control.ScraperCommandType) {
 	switch command {
 	case scraper_control.Restart:
 		log.Println("Restarting Genote Scraping")
 		gs.ticker.Reset(gs.config.TimeInterval)
+		gs.ScrapeOnce()
 	case scraper_control.ForceStart:
 		log.Println("Force Starting Genote Scraping")
 		gs.ScrapeOnce()
-
+	case scraper_control.Start:
+		if gs.isRunning {
+			return
+		}
+		log.Println("Starting Genote Scraping")
+		gs.ticker.Reset(gs.config.TimeInterval)
+		gs.isRunning = true
 	case scraper_control.Stop:
 		log.Println("Stopping Genote Scraping")
 		gs.ticker.Stop()
@@ -76,7 +83,7 @@ func (gs *genoteScraper) handleCommand(command scraper_control.ScraperCommandTyp
 
 }
 
-func (gs *genoteScraper) ScrapeOnce() {
+func (gs *GenoteScraper) ScrapeOnce() {
 	c := utils.CreateCollector()
 
 	fieldsData := map[string]string{
@@ -165,7 +172,7 @@ func scrapeCourseRows(c *colly.Collector) []model.CourseRow {
 	return rows
 }
 
-func (gs *genoteScraper) verifyForChanges(newRows, oldRows []model.CourseRow) {
+func (gs *GenoteScraper) verifyForChanges(newRows, oldRows []model.CourseRow) {
 	diffRows := []string{}
 
 	for index := range newRows {

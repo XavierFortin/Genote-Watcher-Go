@@ -1,23 +1,50 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
 import "./App.css";
-import { helloWorld } from "./services/GenoteController";
+import {
+  forceStartOnceScraper,
+  restartScraper,
+  startScraper,
+  stopScraper,
+} from "./services/GenoteController";
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
     <>
       <h1>Vite + React</h1>
       <div className="card">
         <button
           onClick={() => {
-            helloWorld();
-            setCount((count) => count + 1);
+            startScraper();
           }}
+          id="start-scraper"
         >
-          count is {count}
+          Start scraper
+        </button>
+
+        <button
+          onClick={() => {
+            stopScraper();
+          }}
+          id="stop-scraper"
+        >
+          Stop scraper
+        </button>
+
+        <button
+          onClick={() => {
+            restartScraper();
+          }}
+          id="restart-scraper"
+        >
+          Restart Scraper
+        </button>
+
+        <button
+          onClick={() => {
+            forceStartOnceScraper();
+          }}
+          id="force-start-once-scraper"
+        >
+          Force Start Scraper
         </button>
       </div>
     </>
