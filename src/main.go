@@ -32,24 +32,29 @@ func main() {
 		StartGenoteScraping(config)
 	} else {
 		go func() {
-			currentTimeInterval := config.TimeInterval
-			ticker := time.Tick(currentTimeInterval)
+			ticker := time.NewTicker(config.TimeInterval)
 
 			for {
 				select {
-				case <-ticker:
+				case <-ticker.C:
 					log.Println("Fake getting Genote Scraping")
-					currentTimeInterval = currentTimeInterval - 1*time.Second
-					log.Printf("Current Time Interval: %s\n", currentTimeInterval)
 					//StartGenoteScraping(config)
 				case command := <-ScraperCommandChannel:
 					switch command {
 					case scraper_control.Restart:
 						log.Println("Restarting Genote Scraping")
+						ticker.Reset(config.TimeInterval)
+
 					case scraper_control.ForceStart:
 						log.Println("Force Starting Genote Scraping")
-					}
+						StartGenoteScraping(config)
 
+					case scraper_control.Stop:
+						log.Println("Stopping Genote Scraping")
+						ticker.Stop()
+
+					default:
+					}
 				}
 			}
 		}()

@@ -5,4 +5,5 @@ type ScraperCommandType int
 const (
 	Restart ScraperCommandType = iota
 	ForceStart
+	Stop
 )
