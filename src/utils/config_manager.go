@@ -19,7 +19,7 @@ var (
 	loadErr  error
 )
 
-func MustGetConfig() *model.Config {
+func MustGetConfig() model.Config {
 	once.Do(func() {
 		instance, loadErr = loadEnvVariables()
 	})
@@ -28,7 +28,7 @@ func MustGetConfig() *model.Config {
 		panic(loadErr)
 	}
 
-	return instance
+	return *instance
 }
 
 func loadEnvVariables() (*model.Config, error) {

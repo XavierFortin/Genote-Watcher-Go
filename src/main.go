@@ -1,64 +1,44 @@
 package main
 
 import (
+	"io"
 	"log"
+	"os"
 	"runtime/debug"
-	"time"
 
-	"genote-watcher/model"
 	scraper_control "genote-watcher/scraper-control"
+	"genote-watcher/scrapers"
 	"genote-watcher/utils"
 )
 
-var config *model.Config
-var BuildMode string
-var ScraperCommandChannel chan scraper_control.ScraperCommandType
-
 func main() {
+	var command_channel chan scraper_control.ScraperCommandType = make(chan scraper_control.ScraperCommandType)
+	var scraper = scrapers.NewGenoteScraper(command_channel)
+
+	logFile, err := os.OpenFile("log.txt", os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
+	defer logFile.Close()
+	if err != nil {
+		panic(err)
+	}
+
+	chanWriter := utils.NewChannelWriter(150)
+	defer chanWriter.Close()
+
+	mw := io.MultiWriter(os.Stdout, logFile, chanWriter)
+	log.SetOutput(mw)
+
 	defer func() {
 		if r := recover(); r != nil {
 			stackTrace := string(debug.Stack())
 			log.Println(stackTrace)
 
-			if BuildMode == "prod" {
-				utils.NotifyOnCrash(config.DiscordWebhook)
+			if utils.BuildMode == "prod" {
+				utils.NotifyOnCrash(utils.MustGetConfig().DiscordWebhook)
 			}
 		}
 	}()
 
-	config = utils.MustGetConfig()
+	scraper.Start()
 
-	if config.TimeInterval == 0 {
-		StartGenoteScraping(config)
-	} else {
-		go func() {
-			ticker := time.NewTicker(config.TimeInterval)
-
-			for {
-				select {
-				case <-ticker.C:
-					log.Println("Fake getting Genote Scraping")
-					//StartGenoteScraping(config)
-				case command := <-ScraperCommandChannel:
-					switch command {
-					case scraper_control.Restart:
-						log.Println("Restarting Genote Scraping")
-						ticker.Reset(config.TimeInterval)
-
-					case scraper_control.ForceStart:
-						log.Println("Force Starting Genote Scraping")
-						StartGenoteScraping(config)
-
-					case scraper_control.Stop:
-						log.Println("Stopping Genote Scraping")
-						ticker.Stop()
-
-					default:
-					}
-				}
-			}
-		}()
-	}
-
-	StartServer()
+	StartServer(command_channel)
 }

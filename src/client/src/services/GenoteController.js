@@ -9,6 +9,6 @@ async function Get(url) {
   return await result.json();
 }
 
-export function helloWorld() {
-  return Get("http://localhost:4000/api/hello");
+export function stopScraper() {
+  return Get("http://localhost:4000/api/scraper/stop");
 }
