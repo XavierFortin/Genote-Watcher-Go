@@ -1,0 +1,32 @@
+.scraper-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.start-scraper {
+  background-color: #006600;
+  color: #ffffff;
+  padding: 0.6em;
+  cursor: pointer;
+}
+
+.stop-scraper {
+  background-color: #b30000;
+  color: #fff;
+  padding: 0.6em;
+  cursor: pointer;
+}
+
+.restart-scraper {
+  background-color: #0000b5;
+  color: #fff;
+  padding: 0.6em;
+  cursor: pointer;
+}
+
+.force-start-once-scraper {
+  background-color: #9d009d;
+  color: #fff;
+  padding: 0.6em;
+  cursor: pointer;
+}

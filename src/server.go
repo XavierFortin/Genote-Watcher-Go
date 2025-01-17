@@ -3,39 +3,86 @@ package main
 import (
 	scraper_control "genote-watcher/scraper-control"
 	"log"
-	"net/http"
+	"os"
+
+	"github.com/gofiber/contrib/websocket"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
-var command_channel chan scraper_control.ScraperCommandType
+func StartServer(commandChan chan scraper_control.Command, reponseChan chan scraper_control.Response) {
 
-func registerRoutes() {
-	http.Handle("/", http.FileServer(http.Dir("./client/dist")))
+	app := fiber.New()
 
-	http.HandleFunc("/api/hello", func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("Hello API was called")
+	app.Use(logger.New())
+
+	defer func() {
+		app.Shutdown()
+	}()
+
+	app.Static("/", "./client/dist")
+
+	app.Get("/api/scraper/status", func(c *fiber.Ctx) error {
+		commandChan <- scraper_control.Command{Action: scraper_control.Status}
+		response := <-reponseChan
+
+		return c.JSON(response)
 	})
 
-	http.HandleFunc("/api/scraper/start", func(w http.ResponseWriter, r *http.Request) {
-		command_channel <- scraper_control.Start
+	app.Get("/api/logs", func(c *fiber.Ctx) error {
+		file, err := os.ReadFile("log.txt")
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		return c.SendString(string(file))
+
 	})
 
-	http.HandleFunc("/api/scraper/stop", func(w http.ResponseWriter, r *http.Request) {
-		command_channel <- scraper_control.Stop
+	app.Post("/api/scraper/start", func(c *fiber.Ctx) error {
+		log.Println("Scraper started successfully")
+		commandChan <- scraper_control.Command{Action: scraper_control.Start}
+		return c.SendStatus(200)
 	})
 
-	http.HandleFunc("/api/scraper/force-start", func(w http.ResponseWriter, r *http.Request) {
-		command_channel <- scraper_control.ForceStart
+	app.Post("/api/scraper/stop", func(c *fiber.Ctx) error {
+		log.Println("Stopped scraper successfully")
+		commandChan <- scraper_control.Command{Action: scraper_control.Stop}
+		return c.SendStatus(200)
 	})
 
-	http.HandleFunc("/api/scraper/restart", func(w http.ResponseWriter, r *http.Request) {
-		command_channel <- scraper_control.Restart
+	app.Post("/api/scraper/force-start", func(c *fiber.Ctx) error {
+		log.Println("Scraper force started once")
+		commandChan <- scraper_control.Command{Action: scraper_control.ForceStartOnce}
+		return c.SendStatus(200)
 	})
 
-}
+	app.Post("/api/scraper/restart", func(c *fiber.Ctx) error {
+		log.Println("Scraper restarted")
+		commandChan <- scraper_control.Command{Action: scraper_control.Restart}
+		return c.SendStatus(200)
+	})
 
-func StartServer(command_c chan scraper_control.ScraperCommandType) {
-	command_channel = command_c
-	registerRoutes()
-	log.Printf("Server is running on port 4000")
-	http.ListenAndServe(":4000", nil)
+	// Upgraded websocket request
+	app.Get("/ws", websocket.New(func(c *websocket.Conn) {
+		mutex.Lock()
+		clients[c] = true
+		mutex.Unlock()
+
+		defer func() {
+			mutex.Lock()
+			delete(clients, c)
+			mutex.Unlock()
+			c.Close()
+		}()
+
+		for {
+			if _, _, err := c.ReadMessage(); err != nil {
+				break
+			}
+		}
+	}))
+
+	log.Fatal(app.Listen(":4000"))
 }

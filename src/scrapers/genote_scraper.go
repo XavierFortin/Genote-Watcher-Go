@@ -20,20 +20,22 @@ const (
 )
 
 type GenoteScraper struct {
-	isRunning       bool
-	config          model.Config
-	ticker          *time.Ticker
-	command_channel chan scraper_control.ScraperCommandType
+	isRunning   bool
+	config      model.Config
+	ticker      *time.Ticker
+	CommandChan chan scraper_control.Command
+	ReponseChan chan scraper_control.Response
 }
 
 // Creates a new genoteScraper. Environment variables need to exist to create a new genoteScraper
-func NewGenoteScraper(control_channel chan scraper_control.ScraperCommandType) GenoteScraper {
+func NewGenoteScraper() GenoteScraper {
 	config := utils.MustGetConfig()
 	return GenoteScraper{
-		isRunning:       false,
-		config:          config,
-		ticker:          nil,
-		command_channel: control_channel,
+		isRunning:   true,
+		config:      config,
+		ticker:      nil,
+		CommandChan: make(chan scraper_control.Command),
+		ReponseChan: make(chan scraper_control.Response),
 	}
 }
 
@@ -49,7 +51,7 @@ func (gs *GenoteScraper) Start() {
 				case <-gs.ticker.C:
 					gs.ScrapeOnce()
 
-				case command := <-gs.command_channel:
+				case command := <-gs.CommandChan:
 					gs.handleCommand(command)
 				}
 			}
@@ -57,30 +59,30 @@ func (gs *GenoteScraper) Start() {
 	}
 }
 
-func (gs *GenoteScraper) handleCommand(command scraper_control.ScraperCommandType) {
-	switch command {
-	case scraper_control.Restart:
-		log.Println("Restarting Genote Scraping")
-		gs.ticker.Reset(gs.config.TimeInterval)
-		gs.ScrapeOnce()
-	case scraper_control.ForceStart:
-		log.Println("Force Starting Genote Scraping")
-		gs.ScrapeOnce()
+func (gs *GenoteScraper) handleCommand(command scraper_control.Command) {
+	switch command.Action {
 	case scraper_control.Start:
-		if gs.isRunning {
-			return
-		}
-		log.Println("Starting Genote Scraping")
 		gs.ticker.Reset(gs.config.TimeInterval)
 		gs.isRunning = true
+
 	case scraper_control.Stop:
-		log.Println("Stopping Genote Scraping")
 		gs.ticker.Stop()
 		gs.isRunning = false
 
+	case scraper_control.Status:
+		gs.ReponseChan <- scraper_control.StatusResponse{IsRunning: gs.isRunning}
+
+	case scraper_control.Restart:
+		log.Printf("TimeInterval: %s\n", gs.config.TimeInterval)
+		gs.ticker.Reset(gs.config.TimeInterval)
+		gs.isRunning = true
+		gs.ScrapeOnce()
+
+	case scraper_control.ForceStartOnce:
+		gs.ScrapeOnce()
+
 	default:
 	}
-
 }
 
 func (gs *GenoteScraper) ScrapeOnce() {

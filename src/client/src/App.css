@@ -1,38 +1,30 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+.color-fade {
+  background: linear-gradient(
+    90deg,
+    rgb(1, 26, 255) 0%,
+    rgb(0, 255, 34) 50%,
+    rgb(77, 4, 236) 100%
+  );
+  background-clip: text;
+  color: transparent;
+  animation: color-fade 13s linear infinite;
+  background-size: 200% 200%;
 }
 
-.card {
-  padding: 2em;
+.app-title {
+  margin: 40px 0px 50px 0px;
 }
 
-#start-scraper {
-  background-color: #006600;
-  color: #ffffff;
-  cursor: pointer;
-  margin: 10px;
-}
+@keyframes color-fade {
+  0% {
+    background-position: 0% 0%;
+  }
 
-#stop-scraper {
-  background-color: #b30000;
-  color: #fff;
-  cursor: pointer;
-  margin: 10px;
-}
+  50% {
+    background-position: 100% 100%;
+  }
 
-#restart-scraper {
-  background-color: #0000b5;
-  color: #fff;
-  cursor: pointer;
-  margin: 10px;
-}
-
-#force-start-once-scraper {
-  background-color: #9d009d;
-  color: #fff;
-  cursor: pointer;
-  margin: 10px;
+  100% {
+    background-position: 0% 0%;
+  }
 }
