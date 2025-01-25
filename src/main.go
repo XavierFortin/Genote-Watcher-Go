@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"io"
 	"log"
 	"os"
@@ -18,7 +19,12 @@ func main() {
 			log.Println(stackTrace)
 
 			if utils.BuildMode == "prod" {
-				utils.NotifyOnCrash(config.MustGetConfig().DiscordWebhook)
+				config, err := config.MustGetConfig()
+				if err != nil {
+					return
+				}
+
+				utils.NotifyOnCrash(config.DiscordWebhook)
 			}
 		}
 	}()
@@ -35,5 +41,10 @@ func main() {
 	var scraper = scrapers.NewGenoteScraper()
 	scraper.Start()
 
-	StartServer(&scraper)
+	var port string
+	flag.StringVar(&port, "port", "3000", "port to run the server on")
+
+	flag.Parse()
+
+	StartServer(&scraper, port)
 }

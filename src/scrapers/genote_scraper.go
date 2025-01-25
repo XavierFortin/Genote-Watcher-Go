@@ -21,20 +21,28 @@ const (
 )
 
 type GenoteScraper struct {
-	isRunning   bool
-	config      config.Config
-	ticker      *time.Ticker
-	ReponseChan chan scraper_commands.Response
+	isRunning    bool
+	isConfigured bool
+	config       config.Config
+	ticker       *time.Ticker
 }
 
 // Creates a new genoteScraper. Environment variables need to exist to create a new genoteScraper
 func NewGenoteScraper() GenoteScraper {
-	config := config.MustGetConfig()
+	config, err := config.MustGetConfig()
+	if err != nil {
+		return GenoteScraper{
+			isRunning:    false,
+			isConfigured: false,
+			ticker:       nil,
+		}
+
+	}
 	return GenoteScraper{
-		isRunning:   false,
-		config:      config,
-		ticker:      nil,
-		ReponseChan: make(chan scraper_commands.Response),
+		isRunning:    false,
+		isConfigured: true,
+		config:       config,
+		ticker:       nil,
 	}
 }
 

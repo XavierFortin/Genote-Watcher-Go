@@ -17,7 +17,7 @@ import (
 //go:embed client/dist/*
 var clientHtml embed.FS
 
-func StartServer(scraper *scrapers.GenoteScraper) {
+func StartServer(scraper *scrapers.GenoteScraper, port string) {
 
 	app := fiber.New()
 
@@ -109,5 +109,5 @@ func StartServer(scraper *scrapers.GenoteScraper) {
 		}
 	}))
 
-	log.Fatal(app.Listen(":4000"))
+	log.Fatal(app.Listen("0.0.0.0:" + port))
 }

@@ -8,6 +8,7 @@
   background-clip: text;
   color: transparent;
   animation: color-fade 13s linear infinite;
+  font-weight: bold;
   background-size: 200% 200%;
 }
 

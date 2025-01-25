@@ -25,4 +25,4 @@ FROM alpine:latest
 RUN apk --no-cache add ca-certificates
 COPY --from=go-build /bin/genote-watcher /bin/app
 EXPOSE 4000
-ENTRYPOINT ["/bin/app"]
+ENTRYPOINT ["/bin/app", "--port", "4000"]

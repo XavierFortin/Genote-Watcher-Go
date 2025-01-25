@@ -5,9 +5,7 @@ export const useStatus = () => {
   return useQuery({
     queryKey: ["status"],
     queryFn: async () => {
-      const response = await axios.get(
-        "http://localhost:4000/api/scraper/status"
-      );
+      const response = await axios.get("/api/scraper/status");
       return {
         isRunning: response.data.isRunning,
         interval: response.data.interval,
@@ -21,7 +19,7 @@ export function usePostStartScraper() {
   return useMutation({
     mutationKey: ["startScraper"],
     mutationFn: async () => {
-      return await axios.post("http://localhost:4000/api/scraper/start");
+      return await axios.post("/api/scraper/start");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["status"] });
@@ -34,7 +32,7 @@ export function usePostStopScraper() {
   return useMutation({
     mutationKey: ["stopScraper"],
     mutationFn: async () => {
-      return await axios.post("http://localhost:4000/api/scraper/stop");
+      return await axios.post("/api/scraper/stop");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["status"] });
@@ -47,7 +45,7 @@ export function usePostForceStartOnceScraper() {
   return useMutation({
     mutationKey: ["forceStartOnceScraper"],
     mutationFn: async () => {
-      return await axios.post("http://localhost:4000/api/scraper/force-start");
+      return await axios.post("/api/scraper/force-start");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["status"] });
@@ -60,12 +58,9 @@ export function usePostChangeInterval() {
   return useMutation({
     mutationKey: ["changeInterval"],
     mutationFn: async (interval) => {
-      return await axios.post(
-        "http://localhost:4000/api/scraper/change-interval",
-        {
-          interval,
-        }
-      );
+      return await axios.post("/api/scraper/change-interval", {
+        interval,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["status"] });
