@@ -1,18 +1,15 @@
 package main
 
 import (
+	"io"
 	"log"
+	"os"
 	"runtime/debug"
-	"time"
 
-	"genote-watcher/model"
-	scraper_control "genote-watcher/scraper-control"
+	"genote-watcher/config"
+	"genote-watcher/scrapers"
 	"genote-watcher/utils"
 )
-
-var config *model.Config
-var BuildMode string
-var ScraperCommandChannel chan scraper_control.ScraperCommandType
 
 func main() {
 	defer func() {
@@ -20,40 +17,23 @@ func main() {
 			stackTrace := string(debug.Stack())
 			log.Println(stackTrace)
 
-			if BuildMode == "prod" {
-				utils.NotifyOnCrash(config.DiscordWebhook)
+			if utils.BuildMode == "prod" {
+				utils.NotifyOnCrash(config.MustGetConfig().DiscordWebhook)
 			}
 		}
 	}()
 
-	config = utils.MustGetConfig()
-
-	if config.TimeInterval == 0 {
-		StartGenoteScraping(config)
-	} else {
-		go func() {
-			currentTimeInterval := config.TimeInterval
-			ticker := time.Tick(currentTimeInterval)
-
-			for {
-				select {
-				case <-ticker:
-					log.Println("Fake getting Genote Scraping")
-					currentTimeInterval = currentTimeInterval - 1*time.Second
-					log.Printf("Current Time Interval: %s\n", currentTimeInterval)
-					//StartGenoteScraping(config)
-				case command := <-ScraperCommandChannel:
-					switch command {
-					case scraper_control.Restart:
-						log.Println("Restarting Genote Scraping")
-					case scraper_control.ForceStart:
-						log.Println("Force Starting Genote Scraping")
-					}
-
-				}
-			}
-		}()
+	logFile, err := os.OpenFile("log.txt", os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
+	defer logFile.Close()
+	if err != nil {
+		panic(err)
 	}
 
-	StartServer()
+	mw := io.MultiWriter(os.Stdout, logFile, &WebSocketLogger{})
+	log.SetOutput(mw)
+
+	var scraper = scrapers.NewGenoteScraper()
+	scraper.Start()
+
+	StartServer(&scraper)
 }

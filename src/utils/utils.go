@@ -21,8 +21,11 @@ func GetUserAgents() []string {
 	}
 }
 
+var BuildMode string
+
 func GetRandomUserAgent() string {
 	userAgents := GetUserAgents()
+
 	return userAgents[rand.Intn(len(userAgents))]
 }
 

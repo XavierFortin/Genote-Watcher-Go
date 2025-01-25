@@ -1,25 +1,16 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
 import "./App.css";
-import { helloWorld } from "./services/GenoteController";
+import { LogViewer } from "./components/LogViewer/LogViewer.jsx";
+import { ScraperControls } from "./components/ScraperControls/ScraperControls.jsx";
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
     <>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button
-          onClick={() => {
-            helloWorld();
-            setCount((count) => count + 1);
-          }}
-        >
-          count is {count}
-        </button>
-      </div>
+      <h1 className="app-title">
+        <span className="color-fade">Genote Watcher</span>
+      </h1>
+      <ScraperControls />
+
+      <LogViewer />
     </>
   );
 }

@@ -1,4 +1,4 @@
-package utils
+package config
 
 import (
 	"fmt"
@@ -8,18 +8,27 @@ import (
 	"sync"
 	"time"
 
-	"genote-watcher/model"
-
 	"github.com/joho/godotenv"
 )
 
+type Config struct {
+	Username       string        `env:"GENOTE_USER" required:"true"`
+	Password       string        `env:"GENOTE_PASSWORD" required:"true"`
+	DiscordWebhook string        `env:"DISCORD_WEBHOOK" required:"true"`
+	TimeInterval   time.Duration `env:"TIME_INTERVAL" required:"false" default:"0"`
+}
+
+func (c *Config) SetTimeInterval(duration time.Duration) {
+	c.TimeInterval = duration
+}
+
 var (
-	instance *model.Config
+	instance *Config
 	once     sync.Once
 	loadErr  error
 )
 
-func MustGetConfig() *model.Config {
+func MustGetConfig() Config {
 	once.Do(func() {
 		instance, loadErr = loadEnvVariables()
 	})
@@ -28,11 +37,11 @@ func MustGetConfig() *model.Config {
 		panic(loadErr)
 	}
 
-	return instance
+	return *instance
 }
 
-func loadEnvVariables() (*model.Config, error) {
-	config := &model.Config{}
+func loadEnvVariables() (*Config, error) {
+	config := &Config{}
 
 	godotenv.Load()
 

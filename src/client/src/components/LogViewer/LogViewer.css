@@ -1,0 +1,10 @@
+.log-viewer {
+  font-family: "Consolas", "Courier New", monospace;
+  background-color: black;
+  display: flex;
+  margin-top: 1em;
+
+  flex-direction: column;
+  height: 80vh;
+  overflow-y: scroll;
+}

@@ -14,6 +14,7 @@
 *.out
 
 result.json
+log.txt
 genote-watcher
 
 bin/
