@@ -1,34 +1,28 @@
-FROM node:20-slim AS base
+FROM node:20-slim AS client-build
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
-COPY . /app
-WORKDIR /app
-
-FROM base AS prod-deps
 WORKDIR /app/src/client
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
 
-FROM base AS build
-WORKDIR /app/src/client
+# Only copy package files first to leverage caching
+COPY src/client/package.json src/client/pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+
+# Then copy source and build
+COPY src/client ./
 RUN pnpm build
 
-# Build stage
-FROM golang:alpine AS builder
-RUN apk add --no-cache git
+FROM golang:alpine AS go-build
 WORKDIR /app
+COPY src/go.mod src/go.sum ./
+RUN go mod download
+
 COPY . .
-COPY --from=build /app/src/client/dist /app/src/client/dist
-ENV CGO_ENABLED=0
-RUN cd src && go mod download
+COPY --from=client-build /app/src/client/dist /app/src/client/dist
 RUN go build -C src -o /bin/genote-watcher -v -ldflags "-X utils.BuildMode=prod"
 
-# Final stage
 FROM alpine:latest
 RUN apk --no-cache add ca-certificates
-COPY --from=builder /bin/genote-watcher /bin/genote-watcher/app
+COPY --from=go-build /bin/genote-watcher /bin/app
 EXPOSE 4000
-ENTRYPOINT [ "/bin/genote-watcher/app" ]
-
-LABEL Name=genotewatcher
+ENTRYPOINT ["/bin/app"]
