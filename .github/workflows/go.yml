@@ -29,6 +29,11 @@ jobs:
         run: |
           cd src/client
           pnpm install
+
+      - name: Build client
+        run: |
+          cd src/client
+          pnpm build
   build:
     name: Build and Release
     runs-on: ubuntu-latest
@@ -55,10 +60,6 @@ jobs:
           TIME_INTERVAL=0
           EOL
 
-      - name: Build Client
-        run: |
-          cd src/client
-          pnpm build
       - name: Build and package Linux binary
         run: |
           mkdir -p build/linux
