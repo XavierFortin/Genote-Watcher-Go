@@ -23,15 +23,15 @@
   cursor: pointer;
 }
 
-.restart-scraper {
-  background-color: #0000b5;
+.force-start-once-scraper {
+  background-color: #9d009d;
   color: #fff;
   padding: 0.6em;
   cursor: pointer;
 }
 
-.force-start-once-scraper {
-  background-color: #9d009d;
+.set-interval {
+  background-color: #0066cc;
   color: #fff;
   padding: 0.6em;
   cursor: pointer;

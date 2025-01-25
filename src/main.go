@@ -35,5 +35,5 @@ func main() {
 	var scraper = scrapers.NewGenoteScraper()
 	scraper.Start()
 
-	StartServer(scraper.CommandChan, scraper.ReponseChan)
+	StartServer(&scraper)
 }

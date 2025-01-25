@@ -3,18 +3,30 @@ import {
   usePostStartScraper,
   usePostStopScraper,
   usePostForceStartOnceScraper,
-  usePostRestartScraper,
+  usePostChangeInterval,
 } from "@/services/hooks/scraperController.js";
 import "./ScraperControls.css";
+import { useState } from "react";
+import { useEffect } from "react";
 
 export function ScraperControls() {
   const { data, isLoading } = useStatus();
 
-  const { isRunning, interval } = data || {};
   const { mutate: startScraper } = usePostStartScraper();
   const { mutate: stopScraper } = usePostStopScraper();
   const { mutate: forceStartOnceScraper } = usePostForceStartOnceScraper();
-  const { mutate: restartScraper } = usePostRestartScraper();
+  const { mutate: postSetInterval, error } = usePostChangeInterval();
+
+  const { isRunning, interval } = data || {};
+  const [newInterval, setNewInterval] = useState(interval);
+
+  useEffect(() => {
+    setNewInterval(interval);
+  }, [interval]);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     !isLoading && (
@@ -46,15 +58,6 @@ export function ScraperControls() {
 
           <button
             onClick={() => {
-              restartScraper();
-            }}
-            className="restart-scraper"
-          >
-            Restart Scraper
-          </button>
-
-          <button
-            onClick={() => {
               forceStartOnceScraper();
             }}
             className="force-start-once-scraper"
@@ -63,8 +66,42 @@ export function ScraperControls() {
           </button>
         </div>
         <div className="scraper-controls">
-          <input name="interval" type="text" defaultValue={interval} />
+          <label htmlFor="interval" style={{ alignSelf: "center" }}>
+            Interval:
+          </label>
+          <input
+            name="interval"
+            type="text"
+            style={{ height: "30px", width: "50px", alignSelf: "center" }}
+            defaultValue={interval}
+            onChange={({ target: { value } }) => {
+              if (value) {
+                setNewInterval(value);
+                console.log(value);
+              } else {
+                setNewInterval(0);
+              }
+            }}
+          />
+          <button
+            onClick={() => {
+              postSetInterval(newInterval);
+            }}
+            className="set-interval"
+          >
+            Set Interval
+          </button>
         </div>
+        {error && (
+          <div
+            className="error"
+            style={{
+              color: "red",
+            }}
+          >
+            {error["response"].data}
+          </div>
+        )}
       </div>
     )
   );

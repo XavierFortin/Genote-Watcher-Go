@@ -2,10 +2,11 @@ package main
 
 import (
 	"embed"
-	scraper_control "genote-watcher/scraper-control"
+	"genote-watcher/scrapers"
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
@@ -16,7 +17,7 @@ import (
 //go:embed client/dist/*
 var clientHtml embed.FS
 
-func StartServer(commandChan chan scraper_control.Command, reponseChan chan scraper_control.Response) {
+func StartServer(scraper *scrapers.GenoteScraper) {
 
 	app := fiber.New()
 
@@ -37,10 +38,8 @@ func StartServer(commandChan chan scraper_control.Command, reponseChan chan scra
 	})
 
 	app.Get("/api/scraper/status", func(c *fiber.Ctx) error {
-		commandChan <- scraper_control.Command{Action: scraper_control.Status}
-		response := <-reponseChan
-
-		return c.JSON(response)
+		status := scraper.GetStatus()
+		return c.JSON(status)
 	})
 
 	app.Get("/api/logs", func(c *fiber.Ctx) error {
@@ -54,45 +53,40 @@ func StartServer(commandChan chan scraper_control.Command, reponseChan chan scra
 	})
 
 	app.Post("/api/scraper/start", func(c *fiber.Ctx) error {
-		log.Println("Scraper started successfully")
-		commandChan <- scraper_control.Command{Action: scraper_control.Start}
+		scraper.Start()
 		return c.SendStatus(200)
 	})
 
 	app.Post("/api/scraper/stop", func(c *fiber.Ctx) error {
-		log.Println("Stopped scraper successfully")
-		commandChan <- scraper_control.Command{Action: scraper_control.Stop}
+		scraper.Stop()
 		return c.SendStatus(200)
 	})
 
 	app.Post("/api/scraper/force-start", func(c *fiber.Ctx) error {
-		log.Println("Scraper force started once")
-		commandChan <- scraper_control.Command{Action: scraper_control.ForceStartOnce}
-		return c.SendStatus(200)
-	})
-
-	app.Post("/api/scraper/restart", func(c *fiber.Ctx) error {
-		log.Println("Scraper restarted")
-		commandChan <- scraper_control.Command{Action: scraper_control.Restart}
+		scraper.ScrapeOnce()
 		return c.SendStatus(200)
 	})
 
 	app.Post("/api/scraper/change-interval", func(c *fiber.Ctx) error {
-		log.Println("Scraper interval changed")
-
 		type interval struct {
 			Interval string `json:"interval"`
 		}
 
 		inter := interval{}
-		if err := c.BodyParser(inter); err != nil {
-			return c.Status(400).SendString(err.Error())
+		if err := c.BodyParser(&inter); err != nil {
+			c.Status(400).SendString(err.Error())
+			return err
 		}
 
-		commandChan <- scraper_control.Command{Action: scraper_control.ChangeInterval, Data: inter}
+		duration, err := time.ParseDuration(inter.Interval)
+
+		if err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, "Invalid interval duration, the format must be like 1s, 1m, 1h, 1d or a combination of them")
+		}
+
+		scraper.SetInterval(duration)
 
 		return c.SendStatus(200)
-
 	})
 
 	// Upgraded websocket request

@@ -1,12 +1,11 @@
-package scraper_control
+package scraper_commands
 
 type ScraperCommandType int
 
 const (
-	Start ScraperCommandType = iota
+	Resume ScraperCommandType = iota
 	Stop
 	Status
-	Restart
 	ForceStartOnce
 	ChangeInterval
 )

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"genote-watcher/config"
 	"genote-watcher/model"
-	scraper_control "genote-watcher/scraper-control"
+	"genote-watcher/scraper_commands"
 	"genote-watcher/utils"
 	"log"
 	"slices"
@@ -24,19 +24,17 @@ type GenoteScraper struct {
 	isRunning   bool
 	config      config.Config
 	ticker      *time.Ticker
-	CommandChan chan scraper_control.Command
-	ReponseChan chan scraper_control.Response
+	ReponseChan chan scraper_commands.Response
 }
 
 // Creates a new genoteScraper. Environment variables need to exist to create a new genoteScraper
 func NewGenoteScraper() GenoteScraper {
 	config := config.MustGetConfig()
 	return GenoteScraper{
-		isRunning:   true,
+		isRunning:   false,
 		config:      config,
 		ticker:      nil,
-		CommandChan: make(chan scraper_control.Command),
-		ReponseChan: make(chan scraper_control.Response),
+		ReponseChan: make(chan scraper_commands.Response),
 	}
 }
 
@@ -51,46 +49,37 @@ func (gs *GenoteScraper) Start() {
 				select {
 				case <-gs.ticker.C:
 					gs.ScrapeOnce()
-
-				case command := <-gs.CommandChan:
-					gs.handleCommand(command)
 				}
 			}
 		}()
 	}
 }
 
-func (gs *GenoteScraper) handleCommand(command scraper_control.Command) {
-	switch command.Action {
-	case scraper_control.Start:
+func (gs *GenoteScraper) Stop() {
+	gs.ticker.Stop()
+	gs.isRunning = false
+}
+
+func (gs *GenoteScraper) Resume() {
+	if !gs.isRunning {
 		gs.ticker.Reset(gs.config.TimeInterval)
 		gs.isRunning = true
+	}
+}
 
-	case scraper_control.Stop:
+func (gs *GenoteScraper) GetStatus() scraper_commands.StatusResponse {
+	return scraper_commands.StatusResponse{IsRunning: gs.isRunning, Interval: gs.config.TimeInterval.String()}
+}
+
+func (gs *GenoteScraper) SetInterval(duration time.Duration) {
+	gs.config.SetTimeInterval(duration)
+	gs.ticker.Reset(gs.config.TimeInterval)
+	if !gs.isRunning {
 		gs.ticker.Stop()
 		gs.isRunning = false
-
-	case scraper_control.Status:
-		gs.ReponseChan <- scraper_control.StatusResponse{IsRunning: gs.isRunning, Interval: gs.config.TimeInterval.String()}
-
-	case scraper_control.Restart:
-		log.Printf("TimeInterval: %s\n", gs.config.TimeInterval)
-		gs.ticker.Reset(gs.config.TimeInterval)
-		gs.isRunning = true
-		gs.ScrapeOnce()
-
-	case scraper_control.ForceStartOnce:
-		gs.ScrapeOnce()
-
-	case scraper_control.ChangeInterval:
-		duration, err := time.ParseDuration(command.Data.(string))
-
-		utils.HandleLogError(err)
-		gs.config.SetTimeInterval(duration)
-
-		log.Printf("New interval: %s\n", gs.config.TimeInterval)
-	default:
 	}
+
+	log.Printf("New interval: %s\n", gs.config.TimeInterval)
 }
 
 func (gs *GenoteScraper) ScrapeOnce() {
@@ -125,7 +114,6 @@ func (gs *GenoteScraper) ScrapeOnce() {
 	gs.verifyForChanges(rows, oldRows)
 
 	utils.WriteResultFile(rows)
-
 }
 
 // ScrapeCourses scrapes the courses from the genote website
