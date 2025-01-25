@@ -3,6 +3,7 @@ package scrapers
 import (
 	"cmp"
 	"fmt"
+	"genote-watcher/config"
 	"genote-watcher/model"
 	scraper_control "genote-watcher/scraper-control"
 	"genote-watcher/utils"
@@ -21,7 +22,7 @@ const (
 
 type GenoteScraper struct {
 	isRunning   bool
-	config      model.Config
+	config      config.Config
 	ticker      *time.Ticker
 	CommandChan chan scraper_control.Command
 	ReponseChan chan scraper_control.Response
@@ -29,7 +30,7 @@ type GenoteScraper struct {
 
 // Creates a new genoteScraper. Environment variables need to exist to create a new genoteScraper
 func NewGenoteScraper() GenoteScraper {
-	config := utils.MustGetConfig()
+	config := config.MustGetConfig()
 	return GenoteScraper{
 		isRunning:   true,
 		config:      config,
@@ -70,7 +71,7 @@ func (gs *GenoteScraper) handleCommand(command scraper_control.Command) {
 		gs.isRunning = false
 
 	case scraper_control.Status:
-		gs.ReponseChan <- scraper_control.StatusResponse{IsRunning: gs.isRunning}
+		gs.ReponseChan <- scraper_control.StatusResponse{IsRunning: gs.isRunning, Interval: gs.config.TimeInterval.String()}
 
 	case scraper_control.Restart:
 		log.Printf("TimeInterval: %s\n", gs.config.TimeInterval)
@@ -81,6 +82,13 @@ func (gs *GenoteScraper) handleCommand(command scraper_control.Command) {
 	case scraper_control.ForceStartOnce:
 		gs.ScrapeOnce()
 
+	case scraper_control.ChangeInterval:
+		duration, err := time.ParseDuration(command.Data.(string))
+
+		utils.HandleLogError(err)
+		gs.config.SetTimeInterval(duration)
+
+		log.Printf("New interval: %s\n", gs.config.TimeInterval)
 	default:
 	}
 }

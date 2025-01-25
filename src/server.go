@@ -1,14 +1,20 @@
 package main
 
 import (
+	"embed"
 	scraper_control "genote-watcher/scraper-control"
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 )
+
+//go:embed client/dist/*
+var clientHtml embed.FS
 
 func StartServer(commandChan chan scraper_control.Command, reponseChan chan scraper_control.Response) {
 
@@ -20,7 +26,15 @@ func StartServer(commandChan chan scraper_control.Command, reponseChan chan scra
 		app.Shutdown()
 	}()
 
-	app.Static("/", "./client/dist")
+	app.Use("/", filesystem.New(filesystem.Config{
+		Root:       http.FS(clientHtml),
+		PathPrefix: "client/dist",
+	}))
+
+	app.Use("/api", func(c *fiber.Ctx) error {
+		c.Accepts("application/json")
+		return c.Status(200).Next()
+	})
 
 	app.Get("/api/scraper/status", func(c *fiber.Ctx) error {
 		commandChan <- scraper_control.Command{Action: scraper_control.Status}
@@ -37,7 +51,6 @@ func StartServer(commandChan chan scraper_control.Command, reponseChan chan scra
 		}
 
 		return c.SendString(string(file))
-
 	})
 
 	app.Post("/api/scraper/start", func(c *fiber.Ctx) error {
@@ -62,6 +75,24 @@ func StartServer(commandChan chan scraper_control.Command, reponseChan chan scra
 		log.Println("Scraper restarted")
 		commandChan <- scraper_control.Command{Action: scraper_control.Restart}
 		return c.SendStatus(200)
+	})
+
+	app.Post("/api/scraper/change-interval", func(c *fiber.Ctx) error {
+		log.Println("Scraper interval changed")
+
+		type interval struct {
+			Interval string `json:"interval"`
+		}
+
+		inter := interval{}
+		if err := c.BodyParser(inter); err != nil {
+			return c.Status(400).SendString(err.Error())
+		}
+
+		commandChan <- scraper_control.Command{Action: scraper_control.ChangeInterval, Data: inter}
+
+		return c.SendStatus(200)
+
 	})
 
 	// Upgraded websocket request

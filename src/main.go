@@ -6,6 +6,7 @@ import (
 	"os"
 	"runtime/debug"
 
+	"genote-watcher/config"
 	"genote-watcher/scrapers"
 	"genote-watcher/utils"
 )
@@ -17,7 +18,7 @@ func main() {
 			log.Println(stackTrace)
 
 			if utils.BuildMode == "prod" {
-				utils.NotifyOnCrash(utils.MustGetConfig().DiscordWebhook)
+				utils.NotifyOnCrash(config.MustGetConfig().DiscordWebhook)
 			}
 		}
 	}()

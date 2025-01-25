@@ -6,7 +6,11 @@ export const useStatus = () => {
     queryKey: ["status"],
     queryFn: async () => {
       const response = await get("http://localhost:4000/api/scraper/status");
-      return response.isRunning;
+      console.log(response);
+      return {
+        isRunning: response.isRunning,
+        interval: response.interval,
+      };
     },
   });
 };
@@ -56,6 +60,21 @@ export function usePostRestartScraper() {
     mutationKey: ["restartScraper"],
     mutationFn: async () => {
       return await post("http://localhost:4000/api/scraper/restart");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["status"] });
+    },
+  });
+}
+
+export function usePostChangeInterval() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: ["changeInterval"],
+    mutationFn: async (interval) => {
+      return await post("http://localhost:4000/api/scraper/change-interval", {
+        interval,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["status"] });
