@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: src/client
+        working-directory: 'src/client'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
