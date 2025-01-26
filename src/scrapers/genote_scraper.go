@@ -29,15 +29,7 @@ type GenoteScraper struct {
 
 // Creates a new genoteScraper. Environment variables need to exist to create a new genoteScraper
 func NewGenoteScraper() GenoteScraper {
-	config, err := config.MustGetConfig()
-	if err != nil {
-		return GenoteScraper{
-			isRunning:    false,
-			isConfigured: false,
-			ticker:       nil,
-		}
-
-	}
+	config := config.MustGetConfig()
 	return GenoteScraper{
 		isRunning:    false,
 		isConfigured: true,

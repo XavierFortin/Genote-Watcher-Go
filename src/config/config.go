@@ -31,19 +31,19 @@ var (
 type MissingConfigError struct{}
 
 func (e *MissingConfigError) Error() string {
-	return "missing configuration"
+	return "Missing .env configuration"
 }
 
-func MustGetConfig() (Config, error) {
+func MustGetConfig() Config {
 	once.Do(func() {
 		instance, loadErr = loadEnvVariables()
 	})
 
 	if loadErr != nil {
-		return Config{}, &MissingConfigError{}
+		panic(MissingConfigError{})
 	}
 
-	return *instance, nil
+	return *instance
 }
 
 func loadEnvVariables() (*Config, error) {

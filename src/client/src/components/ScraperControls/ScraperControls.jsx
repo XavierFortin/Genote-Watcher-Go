@@ -8,7 +8,6 @@ import {
 import "./ScraperControls.css";
 import { useState } from "react";
 import { useEffect } from "react";
-import CredentialDialog from "../CredentialDialog/CredentialDialog.jsx";
 
 export function ScraperControls() {
   const { data, isLoading } = useStatus();
@@ -32,7 +31,6 @@ export function ScraperControls() {
   return (
     !isLoading && (
       <>
-        <CredentialDialog open={true} />
         <div className="scraper-controls-container">
           <div className="scraper-controls">
             {isRunning ? (
@@ -41,7 +39,7 @@ export function ScraperControls() {
                   onClick={() => {
                     stopScraper();
                   }}
-                  className="stop-scraper"
+                  className="scraper-control-button stop-scraper"
                 >
                   Stop scraper
                 </button>
@@ -52,7 +50,7 @@ export function ScraperControls() {
                   onClick={() => {
                     startScraper();
                   }}
-                  className="start-scraper"
+                  className="scraper-control-button start-scraper"
                 >
                   Start scraper
                 </button>
@@ -63,18 +61,17 @@ export function ScraperControls() {
               onClick={() => {
                 forceStartOnceScraper();
               }}
-              className="force-start-once-scraper"
+              className="scraper-control-button force-start-once-scraper"
             >
               Force Start Scraper
             </button>
-          </div>
-          <div className="scraper-controls">
+
             <div>
               <label
                 htmlFor="interval"
-                className="block mb-2 text-sm font-medium text-white"
+                className="block text-sm font-medium text-white"
               >
-                First name
+                Time Interval
               </label>
               <input
                 type="text"
@@ -98,7 +95,7 @@ export function ScraperControls() {
               onClick={() => {
                 postSetInterval(newInterval);
               }}
-              className="set-interval"
+              className="scraper-control-button set-interval"
             >
               Set Interval
             </button>

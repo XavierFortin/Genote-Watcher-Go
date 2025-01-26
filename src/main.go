@@ -19,10 +19,7 @@ func main() {
 			log.Println(stackTrace)
 
 			if utils.BuildMode == "prod" {
-				config, err := config.MustGetConfig()
-				if err != nil {
-					return
-				}
+				config := config.MustGetConfig()
 
 				utils.NotifyOnCrash(config.DiscordWebhook)
 			}
@@ -42,7 +39,7 @@ func main() {
 	scraper.Start()
 
 	var port string
-	flag.StringVar(&port, "port", "3000", "port to run the server on")
+	flag.StringVar(&port, "port", "4000", "port to run the server on")
 
 	flag.Parse()
 

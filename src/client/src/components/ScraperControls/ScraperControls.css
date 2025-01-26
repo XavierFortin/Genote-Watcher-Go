@@ -4,6 +4,14 @@
   gap: 10px;
 }
 
+.scraper-control-button {
+  color: #fff;
+  padding: 0em 0.6em;
+  align-self: end;
+  cursor: pointer;
+  height: 2.5em;
+}
+
 .scraper-controls {
   display: flex;
   gap: 10px;
@@ -11,28 +19,16 @@
 
 .start-scraper {
   background-color: #006600;
-  color: #ffffff;
-  padding: 0.6em;
-  cursor: pointer;
 }
 
 .stop-scraper {
   background-color: #b30000;
-  color: #fff;
-  padding: 0.6em;
-  cursor: pointer;
 }
 
 .force-start-once-scraper {
   background-color: #9d009d;
-  color: #fff;
-  padding: 0.6em;
-  cursor: pointer;
 }
 
 .set-interval {
   background-color: #0066cc;
-  color: #fff;
-  padding: 0.6em;
-  cursor: pointer;
 }
