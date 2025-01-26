@@ -43,6 +43,12 @@ to make things faster and easier to share.
     started container so it can track changes over time. If a new container is
     created, it will not work
 
+### Using docker-compose
+- Start by taking the example `docker-compose.yml`
+- Set each envrionment variables
+- Change the port which you want the app to listen ex: "8080:4000" if you want to export 8080 if the app port is set to 4000
+- Run `docker compose up` or `docker compose up -d` to run it in detached mode
+
 ## Access the dashboard
 
 - You can go in your web browser with your specified port (default: 4000) to view the dashboard
