@@ -52,7 +52,7 @@ to make things faster and easier to share.
 ## Access the dashboard
 
 - You can go in your web browser with your specified port (default: 4000) to view the dashboard
-- ![image](https://github.com/user-attachments/assets/b5302d39-58f8-44c8-914d-a5cb07969642)
+![image](https://github.com/user-attachments/assets/b5302d39-58f8-44c8-914d-a5cb07969642)
 
 ## Build the app from scratch
 
