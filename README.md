@@ -58,3 +58,6 @@ to make things faster and easier to share.
 
 - You will need to have go installed
 - Run the build.ps1 script. It will build a windows and a linux/amd64 executable
+
+
+My awesome website https://forx0801.rdvptrwjeiptwpes.live/
