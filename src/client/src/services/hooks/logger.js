@@ -8,7 +8,7 @@ export const useLogs = () => {
     queryKey: ["logs"],
     queryFn: async () => {
       const response = await axios.get("/api/logs");
-      return (await response.data()).split("\n");
+      return response.data.split("\n");
     },
   });
 };
