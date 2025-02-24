@@ -58,7 +58,7 @@ jobs:
       - name: Build and package Linux binary
         run: |
           mkdir -p build/linux
-          GOOS=linux GOARCH=amd64 go build -C src -ldflags "-X utils.BuildMode=prod" -o ../build/linux/genote-watcher
+          GOOS=linux GOARCH=amd64 go build -C src -ldflags "-X 'genote-watcher/utils.BuildMode=prod'" -o ../build/linux/genote-watcher
           cp .env.template build/linux/.env
           cd build/linux
           zip ../genote-watcher:${{github.ref_name}}-linux-amd64.zip genote-watcher .env
@@ -67,7 +67,7 @@ jobs:
       - name: Build and package Windows binary
         run: |
           mkdir -p build/windows
-          GOOS=windows GOARCH=amd64 go build -C src -ldflags "-X utils.BuildMode=prod" -o ../build/windows/genote-watcher.exe
+          GOOS=windows GOARCH=amd64 go build -C src -ldflags "-X 'genote-watcher/utils.BuildMode=prod'" -o ../build/windows/genote-watcher.exe
           cp .env.template build/windows/.env
           cd build/windows
           zip ../genote-watcher:${{github.ref_name}}-windows-amd64.zip genote-watcher.exe .env

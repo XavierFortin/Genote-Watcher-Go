@@ -19,7 +19,7 @@ RUN go mod download
 
 COPY . .
 COPY --from=client-build /app/src/client/dist /app/src/client/dist
-RUN go build -C src -o /bin/genote-watcher -v -ldflags "-X utils.BuildMode=prod"
+RUN go build -C src -o /bin/genote-watcher -v -ldflags "-X 'genote-watcher/utils.BuildMode=prod'"
 
 FROM alpine:latest
 RUN apk --no-cache add ca-certificates
